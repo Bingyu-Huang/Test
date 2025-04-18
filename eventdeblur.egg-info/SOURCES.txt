@@ -1,0 +1,8 @@
+README.md
+setup.py
+eventdeblur.egg-info/PKG-INFO
+eventdeblur.egg-info/SOURCES.txt
+eventdeblur.egg-info/dependency_links.txt
+eventdeblur.egg-info/not-zip-safe
+eventdeblur.egg-info/requires.txt
+eventdeblur.egg-info/top_level.txt

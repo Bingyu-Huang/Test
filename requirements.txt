@@ -1,0 +1,22 @@
+# Create a new conda environment
+conda create -n event_deblur python=3.10
+
+# Activate the environment
+conda activate event_deblur
+
+# Install PyTorch with CUDA 12.1 support
+conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+
+# Install other essential packages
+conda install -c conda-forge wandb tensorboard matplotlib scikit-image opencv 
+conda install -c conda-forge tqdm pyyaml einops lpips
+
+# Install development tools
+conda install -c conda-forge pytest black isort flake8
+
+# Install other dependencies
+pip install diffusers transformers accelerate
+pip install basicsr
+
+# Install git for version control if not already installed
+conda install -c conda-forge git

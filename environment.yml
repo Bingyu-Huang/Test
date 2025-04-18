@@ -1,0 +1,26 @@
+name: event-deblur
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip=23.2.1
+  - pytorch=2.0.1
+  - torchvision=0.15.2
+  - cudatoolkit=11.8
+  - numpy=1.24.3
+  - matplotlib=3.7.2
+  - pyyaml=6.0
+  - tqdm=4.66.1
+  - pillow=10.0.0
+  - scipy=1.11.2
+  - pip:
+    - addict==2.4.0
+    - wandb==0.15.10
+    - opencv-python==4.8.0.76
+    - lpips==0.1.4
+    - tensorboard==2.14.0
+    - future==0.18.3
+    - yapf==0.40.1
+    - lmdb==1.4.1
