@@ -76,15 +76,15 @@ def test_model():
     print("Testing EventDeblur model components...")
     
     # Load configuration
-    config_path = '../options/train/train_event_diffusion.yml'
+    config_path = 'options/train/train_event_diffusion.yml'
     if not os.path.exists(config_path):
         print(f"Config file not found: {config_path}")
         print("Creating config directory...")
         os.makedirs('options/train', exist_ok=True)
-
+        
         # Copy the config from our predefined version
         import shutil
-        shutil.copy('train_config.yml', config_path)  # If we saved it at the root level
+        shutil.copy('train_config.py', config_path)
     
     config = load_config(config_path)
     

@@ -250,32 +250,38 @@ class UpBlock(nn.Module):
         
         # Upsampling
         self.upsample = nn.ConvTranspose2d(out_channels, out_channels, kernel_size=4, stride=2, padding=1)
-    
+
     def forward(self, x, skip, time_emb):
         """Forward function.
-        
+
         Args:
             x (Tensor): Input tensor of shape [B, C, H, W].
             skip (Tensor): Skip connection tensor of shape [B, C', H, W].
             time_emb (Tensor): Time embedding of shape [B, time_channels].
-            
+
         Returns:
             Tensor: Output tensor of shape [B, out_channels, H*2, W*2].
         """
         # Upsample first
         h = self.upsample(x)
-        
+
+        # Ensure spatial dimensions match before concatenating
+        if h.shape[2:] != skip.shape[2:]:
+            h = F.interpolate(h, size=skip.shape[2:], mode='bilinear', align_corners=False)
+
+
         # Concatenate with skip connection
         h = torch.cat([h, skip], dim=1)
-        
+
         # Apply residual blocks
         h = self.res1(h, time_emb)
         h = self.res2(h, time_emb)
-        
+
         # Attention if needed
         if self.has_attn:
             h = self.attn(h)
-        
+
+
         return h
 
 
@@ -532,10 +538,9 @@ class ConditionedUNet(nn.Module):
                 if fusion_type == "splice" else
                 nn.Conv2d(event_ch_list[i], img_ch_list[i], kernel_size=1)
             )
-    
+
     def forward(self, x, timesteps, event_features):
-        """
-        Forward function with event conditioning.
+        """Forward function with event conditioning.
 
         Args:
             x (Tensor): Input tensor of shape [B, C, H, W].
@@ -555,7 +560,7 @@ class ConditionedUNet(nn.Module):
         # Keep track of current scale
         scale_idx = 0
         curr_resolution = x.shape[2]  # Height of the input
-        target_resolutions = [x.shape[2] // (2**i) for i in range(len(self.base_unet.channel_mult))]
+        target_resolutions = [x.shape[2] // (2 ** i) for i in range(len(self.base_unet.channel_mult))]
 
         # Handle case where event_features is a single tensor, not a list
         if not isinstance(event_features, list):
@@ -623,16 +628,18 @@ class ConditionedUNet(nn.Module):
                 elif isinstance(layer, UpBlock):
                     # Ensure there's still a skip connection available
                     if skips:
-                        h = layer(h, skips[-1], time_emb)
+                        next_skip = skips[-1]
+                        # Ensure the upsampled feature and skip connection have the same spatial dimensions
+                        if h.shape[2:] != next_skip.shape[2:]:
+                            h = F.interpolate(h, size=next_skip.shape[2:], mode='bilinear', align_corners=False)
+                        h = layer(h, next_skip, time_emb)
                     else:
-                        # If no skip left, just pass through the block without skip connection
+                        # If no skip left, just pass through without skip connection
                         h = layer.upsample(h)
                         h = layer.res1(h, time_emb)
                         h = layer.res2(h, time_emb)
                         if layer.has_attn:
                             h = layer.attn(h)
-                else:
-                    h = layer(h)
 
         # Final output
         return self.base_unet.out(h)
